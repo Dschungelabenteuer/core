@@ -593,7 +593,8 @@ function innerResolveTypeReference(
 ): ScopeTypeNode | undefined {
   if (typeof name === 'string') {
     if (scope.imports[name]) {
-      return resolveTypeFromImport(ctx, node, name, scope)
+      const fs: FS = ctx.options.fs || ts?.sys
+      if (fs) return resolveTypeFromImport(ctx, node, name, scope)
     } else {
       const lookupSource =
         node.type === 'TSTypeQuery'
@@ -718,7 +719,7 @@ function importSourceToScope(
   let resolved
   if (source.startsWith('.')) {
     // relative import - fast path
-    const filename = path.join(scope.filename, '..', source)
+    const filename = normalizePath(path.join(scope.filename, '..', source))
     resolved = resolveExt(filename, fs)
   } else {
     // module or aliased import - use full TS resolution, only supported in Node
